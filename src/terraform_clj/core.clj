@@ -23,6 +23,10 @@
                                        "nohup busybox httpd -f -p " server-port " &\n")
                        :vpc-security-group-ids ["${aws_security_group.instance.id}"]
                        :lifecycle {:create-before-destroy :true}}
+                      {:type :aws-key-pair
+                       :id "deployer"
+                       :key-name "mykey"
+                       :public-key (slurp "/Users/erik/.ssh/id_rsa.pub")}
                       {:type :aws-security-group
                        :id "instance"
                        :name "terraform-example-instance"
@@ -68,6 +72,9 @@
                                       :target (str "HTTP:" server-port "/")}}]})
 
 (defmulti build-resource :type)
+
+(defmethod build-resource :aws-key-pair [{:keys [id] :as pair}]
+  {:aws-key-payr {name (dissoc pair :id :type)}})
 
 (defmethod build-resource :aws-instance [{:keys [name] :as instance}]
   {:aws-instance {name (dissoc instance :name :type)}})
