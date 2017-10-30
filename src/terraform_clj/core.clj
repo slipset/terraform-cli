@@ -21,16 +21,24 @@
 
 (defn build-provider [{:keys [provider region profile]}]
   {:provider {provider {:region region
-                        :profile profile} }})
+                        :profile profile}}})
 
+(defn build-output [[k v]]
+  {k {:value v}})
+
+(defn build-outputs [output]
+  {:output (->> output
+                (map build-output)
+                (apply merge-with conj))})
 (defn to-underscore [k]
   (str/replace (name k) \- \_))
 
 (defn build [conf]
   (let [provider (build-provider conf)
-        resources (build-resources (:resources conf))]
-    (json/encode (merge provider resources) {:key-fn to-underscore
-                                             :pretty true})))
+        resources (build-resources (:resources conf))
+        output (build-outputs (:output conf))]
+    (json/encode (merge provider resources output) {:key-fn to-underscore
+                                                    :pretty true})))
 
 (defn ->json-file [filename json]
   (spit filename json))
