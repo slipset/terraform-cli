@@ -6,7 +6,7 @@
 (defmulti build-resource :type)
 
 (defmethod build-resource :default [{:keys [id type] :as conf}]
-  {type {id (dissoc conf type id)}})
+  {type {id (dissoc conf :type :id)}})
 
 (defmethod build-resource :aws-launch-configuration [{:keys [id type] :as conf}]
   {type {id (-> conf
@@ -19,8 +19,9 @@
                    (map build-resource)
                    (apply merge-with conj))})
 
-(defn build-provider [{:keys [provider region]}]
-  {:provider {provider {:region region} }})
+(defn build-provider [{:keys [provider region profile]}]
+  {:provider {provider {:region region
+                        :profile profile} }})
 
 (defn to-underscore [k]
   (str/replace (name k) \- \_))
